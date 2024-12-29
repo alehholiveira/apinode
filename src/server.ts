@@ -28,6 +28,10 @@ app.register(fastifySwaggerUi, {
 
 app.register(routes)
 
+app.get('/', () => {
+    return 'API is running!';
+})
+
 app.listen({ port: 3333 }).then(() => {
     console.log('Server is running on port 3333');
 }); 
