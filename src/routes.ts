@@ -3,6 +3,7 @@ import { FastifyTypedInstance } from "./types";
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
 import { hash, compare } from 'bcryptjs';
+import { authMiddleware } from "../middleware/auth";
 
 const prisma = new PrismaClient();
 
@@ -108,22 +109,9 @@ export async function routes(app: FastifyTypedInstance) {
             },
             security: [{ bearerAuth: [] }], // Aplica o esquema de segurança na rota
         },
-        preHandler: async (request, reply) => {
-            const { authorization } = request.headers;
-            if (!authorization) {
-                return reply.status(401).send({ message: 'Token não fornecido' });
-            }
-
-            const token = authorization.split(' ')[1];
-            try {
-                const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string };
-                request.user = decoded;
-            } catch {
-                return reply.status(401).send({ message: 'Token inválido ou expirado' });
-            }
-        },
+        preHandler: authMiddleware,
     }, async (request, reply) => {
-        return { data: `Olá, usuário com ID [${request.user?.id}] e email [${request.user?.email}]!` };
+        return reply.status(200).send({ data: `Olá, usuário com ID [${request.user?.id}] e email [${request.user?.email}]!` });
     });
 
 }
