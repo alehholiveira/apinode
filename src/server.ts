@@ -16,15 +16,33 @@ app.register(fastifySwagger, {
     openapi: {
         info: {
             title: 'Fastify API',
-            version: '1.0.0'
-        }
+            version: '1.0.0',
+        },
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT',
+                    description: 'Digite "Bearer <seu-token>" no campo de autorização.',
+                },
+            },
+        },
+        security: [
+            {
+                bearerAuth: [],
+            },
+        ],
     },
-    transform:jsonSchemaTransform,
-})
+    transform: jsonSchemaTransform,
+});
 
 app.register(fastifySwaggerUi, {
     routePrefix: '/docs',
-})
+    staticCSP: true,
+    transformStaticCSP: (header) => header,
+});
+
 
 app.register(routes)
 

@@ -90,9 +90,40 @@ export async function routes(app: FastifyTypedInstance) {
         const token = jwt.sign(
             { id: user.id, email: user.email },
             JWT_SECRET,
-            { expiresIn: '1h' }
+            { expiresIn: process.env.JWT_EXPIRES_IN }
         );
 
         return reply.status(200).send({ token });
     });
+
+    app.get('/dados', {
+        schema: {
+            tags: ['protected'],
+            description: 'Rota protegida que requer autenticação',
+            response: {
+                200: z.object({
+                    data: z.string(),
+                }),
+                401: z.object({ message: z.string() }),
+            },
+            security: [{ bearerAuth: [] }], // Aplica o esquema de segurança na rota
+        },
+        preHandler: async (request, reply) => {
+            const { authorization } = request.headers;
+            if (!authorization) {
+                return reply.status(401).send({ message: 'Token não fornecido' });
+            }
+
+            const token = authorization.split(' ')[1];
+            try {
+                const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string };
+                request.user = decoded;
+            } catch {
+                return reply.status(401).send({ message: 'Token inválido ou expirado' });
+            }
+        },
+    }, async (request, reply) => {
+        return { data: `Olá, usuário com ID [${request.user?.id}] e email [${request.user?.email}]!` };
+    });
+
 }
