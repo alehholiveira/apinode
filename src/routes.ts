@@ -14,7 +14,7 @@ const users: User[] = []
 export async function routes(app: FastifyTypedInstance){
     app.get('/users', {
         schema:{
-            tags:['ussers'],
+            tags:['users'],
             description:'Listar usuarios',
             response: {
                 200:z.array(z.object({
