@@ -1,6 +1,7 @@
 # Projeto API Node com Fastify e PostgreSQL
 
 Este projeto é uma API desenvolvida com Fastify e TypeScript, utilizando o Prisma como ORM para interagir com um banco de dados PostgreSQL. A aplicação permite listar e criar usuários, com validação de dados utilizando Zod.
+Além disso, as rotas desenvolvidas possuem autodocumentação, utilizando o fastify-swagger.
 
 ## Estrutura do Projeto
 
