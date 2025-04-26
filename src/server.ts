@@ -4,6 +4,7 @@ import { validatorCompiler, serializerCompiler, ZodTypeProvider, jsonSchemaTrans
 import { fastifySwagger } from '@fastify/swagger';
 import { fastifySwaggerUi } from '@fastify/swagger-ui';
 import { routes } from './routes';
+import { uvBuddyRoutes } from './uvbuddy';
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -45,6 +46,8 @@ app.register(fastifySwaggerUi, {
 
 
 app.register(routes)
+
+app.register(uvBuddyRoutes)
 
 app.get('/', () => {
     return 'API is running!';
