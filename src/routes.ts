@@ -113,7 +113,7 @@ export async function routes(app: FastifyTypedInstance) {
         },
         preHandler: authMiddleware,
     }, async (request, reply) => {
-        return reply.status(200).send({ data: `Olá, usuário com ID [${request.user?.id}] e email [${request.user?.email}]!` });
+        return reply.status(200).send({ data: `Olá, usuário com ID [${request.locals?.user?.id}] e email [${request.locals?.user?.email}]!` });
     });
 
 

@@ -12,7 +12,8 @@ export async function authMiddleware(request: FastifyRequest, reply: FastifyRepl
     const token = authorization.split(' ')[1];
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string };
-        request.user = decoded; // Adiciona o usuário ao objeto `request`
+        request.locals = request.locals || {};
+        request.locals.user = decoded; // Adiciona o usuário ao objeto `request`
     } catch {
         return reply.status(401).send({ message: 'Token inválido ou expirado' });
     }
