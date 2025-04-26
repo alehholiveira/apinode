@@ -20,6 +20,8 @@ Além disso, as rotas desenvolvidas possuem autodocumentação, utilizando o fas
 
 1. Certifique-se de ter o Docker e o Docker Compose instalados.
 2. Execute `docker-compose up` para iniciar o banco de dados PostgreSQL.
-3. Inicie a aplicação com `npm run dev`.
+3. Rode a migration disponivel com o comando `npx prisma migrate dev`
+4. Inicie a aplicação com `npm run dev`.
 
-Agora você pode acessar a API em `http://localhost:3333`.
+Agora a API está rodando em `http://localhost:3333`.
+Você pode acessar e testar as rotas disponiveis em: `http://localhost:3333/docs`
