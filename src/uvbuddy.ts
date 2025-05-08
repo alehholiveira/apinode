@@ -22,21 +22,21 @@ const ThingSpeakResponseSchema = z.object({
 export async function uvBuddyRoutes(app: FastifyTypedInstance) {
     app.get('/sensor-data', {
         schema: {
-            tags: ['ThingSpeak'],
+            tags: ['uvBuddy'],
             description: 'Obter dados do sensor do ThingSpeak',
             querystring: z.object({
-                results: z.string().optional().default('2')
+                results: z.string().optional().default('30') 
+                // Definindo o valor padrão como '30', pois representa os ultimos 10 minutos de resultados(definido no código do nosso protótipo)
             }),
             response: {
                 200: z.object({
-                    sensorData: z.array(z.object({
-                        value: z.number().nullable(),
-                        timestamp: z.string(),
-                        entryId: z.number()
-                    })),
+                    sensorData: z.object({
+                        averageValue: z.number(),
+                        lastTimestamp: z.string(),
+                    }),
                     channelInfo: z.object({
                         name: z.string(),
-                        description: z.string().optional() // Tornando o campo description opcional aqui também
+                        description: z.string().optional()
                     })
                 }),
                 500: z.object({
@@ -60,16 +60,29 @@ export async function uvBuddyRoutes(app: FastifyTypedInstance) {
 
             const parsedData = ThingSpeakResponseSchema.parse(response.data);
 
-            // Transformando os dados para o formato desejado
-            const formattedData = {
-                sensorData: parsedData.feeds.map(feed => ({
-                    value: feed.field1 ? parseFloat(feed.field1) : null,
+            const validValues = parsedData.feeds
+                .filter(feed => feed.field1 && parseFloat(feed.field1) > 0)
+                .map(feed => ({
+                    value: parseFloat(feed.field1!),
                     timestamp: feed.created_at,
-                    entryId: feed.entry_id
-                })),
+                }));
+
+            const averageValue = validValues.length > 0
+                ? validValues.reduce((sum, item) => sum + item.value, 0) / validValues.length
+                : 0;
+
+            const lastTimestamp = validValues.length > 0
+                ? validValues[validValues.length - 1].timestamp
+                : '';
+
+            const formattedData = {
+                sensorData: {
+                    averageValue: Number(averageValue.toFixed(2)),
+                    lastTimestamp,
+                },
                 channelInfo: {
                     name: parsedData.channel.name,
-                    description: parsedData.channel.description || ''
+                    description: parsedData.channel.description || 'No description available',
                 }
             };
 
