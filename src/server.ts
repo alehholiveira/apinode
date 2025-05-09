@@ -3,7 +3,18 @@ import { fastifyCors } from '@fastify/cors';
 import { validatorCompiler, serializerCompiler, ZodTypeProvider, jsonSchemaTransform } from 'fastify-type-provider-zod';
 import { fastifySwagger } from '@fastify/swagger';
 import { fastifySwaggerUi } from '@fastify/swagger-ui';
-import { routes } from './routes';
+
+import { routes } from './routes/routes';
+import { uvBuddyRoutes } from './routes/uvbuddy';
+
+import { pino } from 'pino';
+import pretty from 'pino-pretty';
+
+export const logger = pino(pretty({
+    messageFormat: '{msg}',
+    ignore: 'level,pid',
+    colorize: true
+}));
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -45,6 +56,8 @@ app.register(fastifySwaggerUi, {
 
 
 app.register(routes)
+
+app.register(uvBuddyRoutes)
 
 app.get('/', () => {
     return 'API is running!';

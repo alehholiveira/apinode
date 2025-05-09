@@ -1,9 +1,9 @@
 import z from "zod";
-import { FastifyTypedInstance } from "./types";
+import { FastifyTypedInstance } from "../types";
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
 import { hash, compare } from 'bcryptjs';
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware } from "../../middleware/auth";
 import sgMail from "@sendgrid/mail";
 
 const prisma = new PrismaClient();
@@ -113,7 +113,7 @@ export async function routes(app: FastifyTypedInstance) {
         },
         preHandler: authMiddleware,
     }, async (request, reply) => {
-        return reply.status(200).send({ data: `Olá, usuário com ID [${request.user?.id}] e email [${request.user?.email}]!` });
+        return reply.status(200).send({ data: `Olá, usuário com ID [${request.locals?.user?.id}] e email [${request.locals?.user?.email}]!` });
     });
 
 
