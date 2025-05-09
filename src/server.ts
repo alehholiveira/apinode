@@ -4,8 +4,8 @@ import { validatorCompiler, serializerCompiler, ZodTypeProvider, jsonSchemaTrans
 import { fastifySwagger } from '@fastify/swagger';
 import { fastifySwaggerUi } from '@fastify/swagger-ui';
 
-import { routes } from './routes';
-import { uvBuddyRoutes } from './uvbuddy';
+import { routes } from './routes/routes';
+import { uvBuddyRoutes } from './routes/uvbuddy';
 
 import { pino } from 'pino';
 import pretty from 'pino-pretty';

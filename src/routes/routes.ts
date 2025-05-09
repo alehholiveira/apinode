@@ -1,9 +1,9 @@
 import z from "zod";
-import { FastifyTypedInstance } from "./types";
+import { FastifyTypedInstance } from "../types";
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
 import { hash, compare } from 'bcryptjs';
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware } from "../../middleware/auth";
 import sgMail from "@sendgrid/mail";
 
 const prisma = new PrismaClient();

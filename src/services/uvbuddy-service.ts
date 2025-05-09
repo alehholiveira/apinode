@@ -1,8 +1,8 @@
 import { logger } from '../server';
-import { ThingSpeakResponseSchema } from '../uvbuddy'
+import { ThingSpeakResponseSchema } from '../routes/uvbuddy'
 
 export function formatUvBuddyData(payload: typeof ThingSpeakResponseSchema['_type']) {
-    logger.info(`starting formatUvBuddyData service`);
+    logger.info(`Starting formatUvBuddyData service`);
     try {
         const validValues = payload.feeds
                 .filter(feed => feed.field1 && parseFloat(feed.field1) > 0)

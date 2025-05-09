@@ -1,8 +1,8 @@
 import z from "zod";
-import { FastifyTypedInstance } from "./types";
+import { FastifyTypedInstance } from "../types";
 import axios from "axios";
-import { logger } from "./server";
-import { formatUvBuddyData } from "./services/uvbuddy-service";
+import { logger } from "../server";
+import { formatUvBuddyData } from "../services/uvbuddy-service";
 
 export const ThingSpeakFeedSchema = z.object({
     field1: z.string().nullable(),
