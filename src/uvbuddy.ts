@@ -1,14 +1,16 @@
 import z from "zod";
 import { FastifyTypedInstance } from "./types";
 import axios from "axios";
+import { logger } from "./server";
+import { formatUvBuddyData } from "./services/uvbuddy-service";
 
-const ThingSpeakFeedSchema = z.object({
+export const ThingSpeakFeedSchema = z.object({
     field1: z.string().nullable(),
     created_at: z.string(),
     entry_id: z.number()
 });
 
-const ThingSpeakResponseSchema = z.object({
+export const ThingSpeakResponseSchema = z.object({
     channel: z.object({
         id: z.number(),
         name: z.string(),
@@ -45,9 +47,10 @@ export async function uvBuddyRoutes(app: FastifyTypedInstance) {
             }
         }
     }, async (request, reply) => {
+        const { results } = request.query;
+        logger.info(`Get request to /sensor-data endpoint : request.query : ${results}`);
+        
         try {
-            const { results } = request.query;
-            
             const response = await axios.get(
                 `https://api.thingspeak.com/channels/${process.env.THINGSPEAK_CHANNEL_ID}/feeds.json`,
                 {
@@ -56,39 +59,16 @@ export async function uvBuddyRoutes(app: FastifyTypedInstance) {
                         results
                     }
                 }
-            );
+            ); 
+
+            logger.info(`Succefuly get to thingspeak API`);
 
             const parsedData = ThingSpeakResponseSchema.parse(response.data);
-
-            const validValues = parsedData.feeds
-                .filter(feed => feed.field1 && parseFloat(feed.field1) > 0)
-                .map(feed => ({
-                    value: parseFloat(feed.field1!),
-                    timestamp: feed.created_at,
-                }));
-
-            const averageValue = validValues.length > 0
-                ? validValues.reduce((sum, item) => sum + item.value, 0) / validValues.length
-                : 0;
-
-            const lastTimestamp = validValues.length > 0
-                ? validValues[validValues.length - 1].timestamp
-                : '';
-
-            const formattedData = {
-                sensorData: {
-                    averageValue: Number(averageValue.toFixed(2)),
-                    lastTimestamp,
-                },
-                channelInfo: {
-                    name: parsedData.channel.name,
-                    description: parsedData.channel.description || 'No description available',
-                }
-            };
+            const formattedData = await formatUvBuddyData(parsedData);
 
             return reply.status(200).send(formattedData);
         } catch (error) {
-            console.error('Erro ao buscar dados do ThingSpeak:', error);
+            logger.error(`Error to get request to /sensor-data endpoint : error : ${error}`);
             return reply.status(500).send({ message: error instanceof Error ? error.message : 'An unexpected error occurred' });
         }
     });
