@@ -2,7 +2,7 @@ import z from "zod";
 import { FastifyTypedInstance } from "../types";
 import axios from "axios";
 import { logger } from "../server";
-import { formatUvBuddyData } from "../services/uvbuddy-service";
+import { formatUvBuddyData, formatUvBuddyDataHourly } from "../services/uvbuddy-service";
 
 export const ThingSpeakFeedSchema = z.object({
     field1: z.string().nullable(),
@@ -69,6 +69,51 @@ export async function uvBuddyRoutes(app: FastifyTypedInstance) {
             return reply.status(200).send(formattedData);
         } catch (error) {
             logger.error(`Error to get request to /sensor-data endpoint : error : ${error}`);
+            return reply.status(500).send({ message: error instanceof Error ? error.message : 'An unexpected error occurred' });
+        }
+    });
+
+    app.get('/sensor-data/hourly', {
+        schema: {
+            tags: ['uvBuddy'],
+            description: 'Obtem os últimos 180 dados do sensor do ThingSpeak (última hora), formatados para gráficos',
+            response: {
+                200: z.object({
+                    formattedData: z.array(z.object({
+                        value: z.number(),
+                        timestamp: z.string(),
+                    })),
+                    channelInfo: z.object({
+                        name: z.string(),
+                        description: z.string().optional()
+                    })
+                }),
+                500: z.object({
+                    message: z.string()
+                })
+            }
+        }
+    }, async (request, reply) => {
+        logger.info('Get request to /sensor-data/hourly endpoint');
+        try {
+            const response = await axios.get(
+                `https://api.thingspeak.com/channels/${process.env.THINGSPEAK_CHANNEL_ID}/feeds.json`,
+                {
+                    params: {
+                        api_key: process.env.THINGSPEAK_READ_API_KEY,
+                        results: 180
+                    }
+                }
+            );
+
+            logger.info('Successfully fetched 180 results from ThingSpeak API');
+
+            const parsedData = ThingSpeakResponseSchema.parse(response.data);
+            const formattedData = await formatUvBuddyDataHourly(parsedData);
+            
+            return reply.status(200).send(formattedData);
+        } catch (error) {
+            logger.error(`Error in /sensor-data/hourly: ${error}`);
             return reply.status(500).send({ message: error instanceof Error ? error.message : 'An unexpected error occurred' });
         }
     });

@@ -37,3 +37,30 @@ export function formatUvBuddyData(payload: typeof ThingSpeakResponseSchema['_typ
         throw error;
     }
 }
+
+export function formatUvBuddyDataHourly(payload: typeof ThingSpeakResponseSchema['_type']) {
+    logger.info(`formatUvBuddyDataHourly service`);
+    try {
+        const formattedData = payload.feeds
+                .filter(feed => feed.field1 && !isNaN(Number(feed.field1)))
+                .map(feed => ({
+                    value: Number(feed.field1),
+                    timestamp: feed.created_at
+                }));
+
+        const data = {
+            formattedData,
+            channelInfo: {
+                name: payload.channel.name,
+                description: payload.channel.description || 'No description available',
+            }
+        }
+        
+        logger.info(`formatUvBuddyDataHourly formatted payload: ${JSON.stringify(data)}`);
+
+        return data
+    } catch (error) {
+        logger.error(`Error in formatUvBuddyDataHourly : error : ${error}`);
+        throw error;
+    }
+}
